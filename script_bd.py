@@ -22,6 +22,7 @@ search_results = Table(
     Column('user_id_found', Integer(), ForeignKey('users_vk.user_id'))
 )
 
+
 # поиск пользователя в таблице пользователей
 def check_users_vk(user_id):
     search = users_vk.select()
