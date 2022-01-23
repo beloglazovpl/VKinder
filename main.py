@@ -1,6 +1,6 @@
 from datetime import date
 from vk_api.longpoll import VkEventType
-from script_bd import check_users_vk, check_search_results, save_users_vk, save_search_results, metadata, engine
+from database.script_bd import check_users_vk, check_search_results, save_users_vk, save_search_results, metadata, engine
 from botvk.keyboard_file import keyboard
 from apivk.function_vk import vkinder
 from botvk.function_botvk import write_msg, write_msg_keyboard, longpoll, send_photo
