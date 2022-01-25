@@ -1,6 +1,6 @@
 import math
 import requests
-from config import token_user, token
+from config import token_user
 
 
 class ApiVK:
@@ -66,21 +66,7 @@ class ApiVK:
         else:
             return all_photo_list
 
-    # читаем сообщение от пользователя(не используется)
-    def read_msg(self, user_id):
-        read_msg_url = self.url + 'messages.getHistory'
-        read_msg_params = {
-            'access_token': token,
-            'user_id': user_id,
-            'offset': 0,
-            'count': 1
-        }
-        res = requests.get(url=read_msg_url, params={**self.params, **read_msg_params}).json()
-        items = res['response']['items']
-        for item in items:
-            return item['text']
-
-    # получаем список стран
+    # определяем страну пользователя
     def get_country(self, country_user):
         country_url = self.url + 'database.getCountries'
         country_params = {
@@ -94,30 +80,46 @@ class ApiVK:
             if country['title'] == country_user:
                 return country['id']
 
-    # получаем список городов
-    def get_cities_list(self, country, offset):
+    # определяем регион пользователя
+    def get_region(self, country, region_user):
+        region_url = self.url + 'database.getRegions'
+        region_params = {
+            'access_token': token_user,
+            'country_id': country,
+            'count': 1000,
+        }
+        res = requests.get(url=region_url, params={**self.params, **region_params}).json()
+        region_list = res['response']['items']
+        for region in region_list:
+            if region['title'] == region_user:
+                return region['id']
+
+    # получаем список городов (в стране и регионе)
+    def get_cities_list(self, country, region, offset):
         city_url = self.url + 'database.getCities'
         city_params = {
             'access_token': token_user,
             'country_id': country,
-            'need_all': 1,
+            'region_id': region,
+            'need_all': 0,
             'count': 1000,
-            'offset': offset*1000
+            'offset': 1000 * offset
         }
         res = requests.get(url=city_url, params={**self.params, **city_params}).json()
         return res
 
-    # поиск id города введенного пользователем
-    def get_city(self, country, user_city):
-        offset = 0
-        res = vkinder.get_cities_list(country, offset)
-        count = res['response']['count']
-        offset = math.ceil(count / 1000)
-        for i in range(offset + 1):
-            cities = vkinder.get_cities_list(country, i)['response']['items']
-            for city in cities:
-                if city['title'] == user_city:
-                    return city['id']
-
 
 vkinder = ApiVK()
+
+
+# определяем город пользователя
+def get_city(country, region, user_city):
+    offset = 0
+    res = vkinder.get_cities_list(country, region, offset)
+    count = res['response']['count']
+    offset = math.ceil(count / 1000)
+    for i in range(offset + 1):
+        cities = vkinder.get_cities_list(country, region, i)['response']['items']
+        for city in cities:
+            if city['title'] == user_city:
+                return city['id']
